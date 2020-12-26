@@ -1,23 +1,48 @@
-# @berish/stateful
+# @berish/stateful-react-connect
 
-A powerful manager with a new look on working with states. Allows for easy and affordable handling of state using vanilla JS. Knows how to read changes and update data optimally, updates only specific changed data. Works both in memory and with various state storage adapters.
+ReactJS connector for @berish/stateful state managment
 
 ## Installation
 
 ```
-$ npm install @berish/stateful --save
+$ npm install @berish/stateful-react-connect --save
 ```
 
 or
 
 ```
-$ yarn add @berish/stateful
+$ yarn add @berish/stateful-react-connect
 ```
 
 **Supports typescript**
 
-## Concept
+# Usage
 
-# Basic usecase
+```typescript
+import * as React from 'react';
+import { createStateful } from '@berish/stateful';
+import { connect } from '@berish/stateful-react-connect';
 
-# Advanced
+const store = createStateful({ count: 0, name: 'Ravil' });
+
+function _ViewCountComponent(props: { prop: string }) {
+  return (
+    <div>
+      {props.prop}: {store[props.prop]}
+    </div>
+  );
+}
+
+const ViewCountComponent = connect([hub])(_ViewCountComponent); // === const ViewCountComponent = connect([hub], _ViewCountComponent);
+
+export function TestComponent() {
+  return (
+    <>
+      <ViewCountComponent prop="count" />
+      <ViewCountComponent prop="name" />
+      <button onClick={() => store.count++}>Plus one</button>
+      <button onClick={() => (store.name = `${store.name}${store.count}`)}>Change name</button>
+    </>
+  );
+}
+```
