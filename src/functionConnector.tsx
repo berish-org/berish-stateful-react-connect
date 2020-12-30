@@ -12,15 +12,11 @@ export function functionConnector<T>(
     const renderFunction = React.useCallback(() => Component && Component(props, context), [props, context]);
 
     useEffect(() => {
-      let reactionObj = reaction(
-        stores,
-        () => {
-          const result = renderFunction();
-          setRender(result);
-          return result;
-        },
-        () => {},
-      );
+      let reactionObj = reaction(stores, () => {
+        const result = renderFunction();
+        setRender(result);
+        return result;
+      });
       return () => {
         reactionObj.revoke();
         reactionObj = void 0;
