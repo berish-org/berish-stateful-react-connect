@@ -1,39 +1,31 @@
 import * as React from 'react';
-import { useEffect, useRef, useReducer } from 'react';
-import { StatefulObject, IReaction, reaction } from '@berish/stateful';
-
-function useForceUpdate() {
-  const [, forceUpdate] = useReducer((x) => x + 1, 0);
-
-  return forceUpdate;
-}
+import { useEffect } from 'react';
+import { StatefulObject, reaction } from '@berish/stateful';
 
 export function functionConnector<T>(
   stores: StatefulObject<object>[],
   Component: React.FunctionComponent<T>,
 ): React.FunctionComponent<T> {
   return function (props: React.PropsWithChildren<T>, context: any): React.ReactElement {
-    const forceUpdate = useForceUpdate();
-    const reactionRef = useRef<IReaction<React.ReactElement>>();
+    const [render, setRender] = React.useState(<React.Fragment />);
+
+    const renderFunction = React.useCallback(() => Component && Component(props, context), [props, context]);
 
     useEffect(() => {
-      return () => {
-        if (reactionRef.current) {
-          reactionRef.current.revoke();
-          reactionRef.current = void 0;
-        }
-      };
-    }, []);
-
-    if (!reactionRef.current) {
-      let rendered: React.ReactElement = null;
-      reactionRef.current = reaction(
+      let reactionObj = reaction(
         stores,
-        () => (rendered = Component && Component(props, context)),
-        () => forceUpdate(),
+        () => {
+          const result = renderFunction();
+          setRender(result);
+          return result;
+        },
+        () => {},
       );
-      return rendered;
-    }
-    return reactionRef.current.result();
+      return () => {
+        reactionObj.revoke();
+        reactionObj = void 0;
+      };
+    }, [renderFunction]);
+    return render;
   };
 }
