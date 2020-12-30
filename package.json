@@ -1,6 +1,6 @@
 {
   "name": "@berish/stateful-react-connect",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "ReactJS connector for @berish/stateful state managment",
   "main": "build/index.js",
   "typings": "build/index.d.ts",
