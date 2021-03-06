@@ -1,6 +1,6 @@
 {
   "name": "@berish/stateful-react-connect",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "ReactJS connector for @berish/stateful state managment",
   "main": "build/index.js",
   "typings": "build/index.d.ts",
@@ -30,7 +30,7 @@
     "test": "jest --config jestconfig.json",
     "test:dev": "jest --config jestconfig.json --watch --verbose=false",
     "build": "tsc -p .",
-    "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
+    "format": "prettier --write \"src/**/*.ts\"",
     "lint": "tslint -p tsconfig.json",
     "prepare": "npm run build",
     "prepublishOnly": "npm test && npm run lint",
