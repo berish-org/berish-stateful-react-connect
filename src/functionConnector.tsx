@@ -1,27 +1,52 @@
 import * as React from 'react';
-import { useEffect } from 'react';
-import { StatefulObject, reaction } from '@berish/stateful';
+import guid from 'berish-guid';
+import LINQ from '@berish/linq';
+import { StatefulObject, getScope } from '@berish/stateful';
+
+function useForceUpdate() {
+  const [, forceUpdate] = React.useReducer((x) => x + 1, 0);
+  return forceUpdate;
+}
 
 export function functionConnector<T>(
   stores: StatefulObject<object>[],
   Component: React.FunctionComponent<T>,
 ): React.FunctionComponent<T> {
+  const scopes = stores && stores.map((store) => getScope(store)).filter(Boolean);
+  if (!scopes || scopes.length < 0) throw new TypeError('Need add stateful store in reaction. Current empty.');
+
   return function (props: React.PropsWithChildren<T>, context: any): React.ReactElement {
-    const [render, setRender] = React.useState(<React.Fragment />);
+    const reactionId = React.useMemo(() => guid.guid(), []);
+    const forceUpdate = useForceUpdate();
 
-    const renderFunction = React.useCallback(() => Component && Component(props, context), [props, context]);
+    const propsModel = React.useMemo<(string | number | symbol)[][][]>(() => scopes.map(() => []), []);
 
-    useEffect(() => {
-      let reactionObj = reaction(stores, () => {
-        const result = renderFunction();
-        setRender(result);
-        return result;
-      });
-      return () => {
-        reactionObj.revoke();
-        reactionObj = void 0;
-      };
-    }, [renderFunction]);
-    return render;
+    scopes.forEach((scope, index) => {
+      React.useEffect(() => {
+        const listenId = scope.listenChange((props) => {
+          const propsModelIndex = LINQ.from(propsModel[index]);
+          if (propsModelIndex.some((m) => LINQ.from(m).equalsValues(props))) forceUpdate();
+        });
+
+        return () => {
+          scope.unlistenChange(listenId);
+        };
+      }, []);
+    });
+
+    scopes.forEach((scope, index) => {
+      propsModel[index] = [];
+      scope.cleanRecord(reactionId);
+      scope.startRecord(reactionId);
+    });
+
+    const result = Component && Component(props, context);
+
+    scopes.forEach((scope, index) => {
+      scope.stopRecord(reactionId);
+      propsModel[index] = scope.getRecordProps(reactionId);
+    });
+
+    return result as any;
   };
 }
