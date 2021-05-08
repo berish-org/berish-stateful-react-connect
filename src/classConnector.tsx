@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { StatefulObject, IReaction, reaction } from '@berish/stateful';
+import { StatefulObject, Reaction, reaction } from '@berish/stateful';
 
 const SYMBOL_REACTION = Symbol('reaction');
 
@@ -8,7 +8,7 @@ export function classConnector<TComponent extends new (...args: any[]) => React.
   component: TComponent,
 ) {
   const cls: TComponent = class extends component {
-    private [SYMBOL_REACTION]: IReaction<React.ReactNode> = null;
+    private [SYMBOL_REACTION]: Reaction<React.ReactNode> = null;
 
     constructor(...args) {
       super(...args);
